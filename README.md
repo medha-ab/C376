@@ -1,3 +1,3 @@
 README.md
 
--Projects and code I learnt on the go.
+-Projects and Assingments code I learnt on my journey.
