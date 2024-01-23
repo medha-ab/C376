@@ -1,81 +1,66 @@
 public class ThreadLifeCycle {
 
-    static class CustomThread extends Thread {
-        @Override
-        public void run() {
-            // Running state
-            System.out.println("Thread is in RUNNING state");
+    public static void main(String[] args) {
+        // Creating a new thread
+        Thread myThread = new Thread(() -> {
+            // Runnable state
+            printState("Runnable");
 
-            // Simulate some work
+            // Simulating some processing
             try {
-                sleep(1000); // Simulate work for 1 second
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
+            }
+
+            // Blocked state (synchronized block)
+            synchronized (ThreadLifeCycle.class) {
+                printState("Blocked (synchronized block)");
             }
 
             // Waiting state
-            System.out.println("Thread is in WAITING state");
-
-            synchronized (this) {
-                try {
-                    this.wait(); // Thread goes into WAITING state
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+            try {
+                Object lock = new Object();
+                synchronized (lock) {
+                    printState("Waiting");
+                    lock.wait();
                 }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
 
             // Timed Waiting state
-            System.out.println("Thread is in TIMED_WAITING state");
-
             try {
-                sleep(2000); // Simulate work for 2 seconds
+                printState("Timed Waiting");
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
-            // Blocked state
-            System.out.println("Thread is in BLOCKED state");
-
-            // Simulate some work
-            try {
-                sleep(1000); // Simulate work for 1 second
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-
-            // Terminated state
-            System.out.println("Thread is in TERMINATED state");
-        }
-    }
-
-    public static void main(String[] args) {
-        CustomThread customThread = new CustomThread();
+        });
 
         // New state
-        System.out.println("Thread is in NEW state");
+        printState("New");
 
-        // Start the thread
-        customThread.start();
+        // Starting the thread
+        myThread.start();
 
+        // Allow some time for the thread to complete
         try {
-            // Main thread goes to sleep to allow the customThread to progress through states
-            Thread.sleep(500);
-
-            // Runnable state
-            System.out.println("Thread is in RUNNABLE state");
-
-            // Interrupt the waiting thread to transition from WAITING to RUNNABLE state
-            synchronized (customThread) {
-                customThread.notify();
-            }
-
-            // Main thread goes to sleep to allow the customThread to progress through states
-            Thread.sleep(500);
-
-            // Transition from TIMED_WAITING to RUNNABLE state
-            customThread.interrupt();
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        // Notify and Terminate the thread
+        synchronized (myThread) {
+            myThread.notify();
+        }
+
+        // Terminated state
+        printState("Terminated");
+    }
+
+    private static void printState(String state) {
+        System.out.println("Thread is in the " + state + " state.");
     }
 }
